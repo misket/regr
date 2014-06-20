@@ -1,0 +1,40 @@
+The effect of transmission type to mileage in 1974 model cars
+===
+
+## Executive Summary
+buralar hep dolacak
+
+```{r, eval = FALSE}
+data(mtcars)
+
+mtcars[,c(2,8:11)] <- lapply(mtcars[,c(2,8:11)], as.factor)
+
+plot(mtcars$am, mtcars$mpg)
+pairs(mtcars, panel = panel.smooth, col = 3 + (mtcars$am == 1))
+cor(mtcars[sapply(mtcars, is.numeric)])
+
+summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
+summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
+
+summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))
+
+mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars)
+
+```
+
+```{r, echo = FALSE}
+data(mtcars)
+
+mtcars[,c(2,8:11)] <- lapply(mtcars[,c(2,8:11)], as.factor)
+
+plot(mtcars$am, mtcars$mpg)
+pairs(mtcars, panel = panel.smooth, col = 3 + (mtcars$am == 1))
+cor(mtcars[sapply(mtcars, is.numeric)])
+
+summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
+summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
+
+summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))
+
+mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars)
+```
