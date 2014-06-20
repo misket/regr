@@ -9,9 +9,9 @@ cor(mtcars[sapply(mtcars, is.numeric)])
 summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
 summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
 
-summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))
+summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat - hp, data = mtcars))
 
-mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars)
+mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat - hp, data = mtcars)
 
 ## residual diagnostics
 par(mfcol = c(2,2))
