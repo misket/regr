@@ -10,6 +10,7 @@ summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
 summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
 
 summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat - hp, data = mtcars))
+summary(lm(mpg ~ am + wt + qsec, data = mtcars))
 
 mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat - hp, data = mtcars)
 
@@ -21,7 +22,7 @@ sort(rstandard(mdl), decreasing = T)[1:4]
 
 sort(hatvalues(mdl), decreasing = TRUE)[1:4]
 
-sort(dfbetas(mdl)[,5], decreasing = T)[1:4]
+sort(dfbetas(mdl), decreasing = T)[1:4]
 
 press <- resid(mdl) / (1 - hatvalues(mdl))
 sort(press, decreasing = T)[1:4]

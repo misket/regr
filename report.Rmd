@@ -1,40 +1,67 @@
-The effect of transmission type to mileage in 1974 model cars
-===
+## The effect of transmission type to mileage in 1974 model cars
+### Executive Summary
+This report is aimed to determine the average effect of transmission type on mileage of various 1973 and 1974 make cars. These cars vary from luxury cars to sedan city cars and a total of 32 cars were investigated. The data has various variables such as number of cylinders, tansmission type, weight, etc.
 
-## Executive Summary
-buralar hep dolacak
+The most parsimonious model with the highest coefficient of determination (R^2 = 83%) covered; weight, 1/4 mile time, and transmission type.
 
-```{r, eval = FALSE}
+The analysis suggests a 2.93 mpg increase in mileage when changing the transmission type from automatic to manual; when weight and 1/4 mile time is kept constant. It should be noted that this regression is valid for the existing data points and extrapolation should be done with extreme caution.
+
+In addition to the difference between two transmission types; the model suggests that lower mileage due to automatic transmission is partly due to increase in weight caused by the heavier system.
+
+It is safe to say switching from automatic to manual transmission would have worked fine *regarding mileage* **in the year 1974**
+### Exploratory Analysis
+The variable names are printed a boplot of the mileage of two different transmission types. Finally the correlations of all the numeric variables to each other was investigated.
+Note that most of the variables had to be redefined as factors.
+```{r, fig.height = 5, }
 data(mtcars)
-
+names(mtcars)
 mtcars[,c(2,8:11)] <- lapply(mtcars[,c(2,8:11)], as.factor)
-
 plot(mtcars$am, mtcars$mpg)
-pairs(mtcars, panel = panel.smooth, col = 3 + (mtcars$am == 1))
 cor(mtcars[sapply(mtcars, is.numeric)])
+```
+The correlation table shows that most of the numeric variables are considerably related to each other. We have to take this into account whan we are trying to find the most parsimonous model.
 
+Also The boxplot strongly suggest a divide between two different transmission types. It seems we are on the right path.
+### The Model
+
+The strategy of determining the most relevent model was to maximise R^2 while minimizing the variables. The first comparison was made between a model that uses all the variables vs a model that only regressing using the transmission type.
+```{r}
 summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
 summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
+```
+Since all the variables give a higher R^2 it was decided to reduce the variables with the highest p values until R^2 stopped increasing.
 
-summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))
-
-mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars)
-
+The highest R^2 comes up when; power, weight and 1/4 mile time (qsec) are applied as covariates to thransmission type. However reducing hp does not impact the R^2 to much and the weight - power correlation is considerable (explained above). Thus the finel model has only the weight and qsec as covariates.
+``` {r}
+summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))$adj.r.squared
+mdl <- lm(mpg ~ am + wt + qsec, data = mtcars)
+summary(mdl)
 ```
 
+This model shows that transmission type, weight and 1/4 mile time explaines 83% of the change of mileage in this data. Furthermore transmission type seems to change the mileage. In particular, with all covariates kept constant changing from automatic to manual increases the mileage 2.93 mpg in average.
+
+### Diagnostics
+When we plot rhe residual diagnostics we observe some outliers. Other than that the normality and independence of residuals are fairly comforting.
+```{r}
+par(mfcol = c(2,2))
+plot(mdl)
+```
+
+If we run the following code we realise that the major outliers are: **Chrysler Imperial**, **Fiat 128** and **Toyota Corolla**.
+```{r, results = 'hide'}
+sort(rstandard(mdl), decreasing = T)[1:4]
+
+sort(hatvalues(mdl), decreasing = TRUE)[1:4]
+
+sort(dfbetas(mdl), decreasing = T)[1:4]
+
+press <- resid(mdl) / (1 - hatvalues(mdl))
+sort(press, decreasing = T)[1:4]
+
+```
+Finally if we check the data for these cars we see:
 ```{r, echo = FALSE}
-data(mtcars)
-
-mtcars[,c(2,8:11)] <- lapply(mtcars[,c(2,8:11)], as.factor)
-
-plot(mtcars$am, mtcars$mpg)
-pairs(mtcars, panel = panel.smooth, col = 3 + (mtcars$am == 1))
-cor(mtcars[sapply(mtcars, is.numeric)])
-
-summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
-summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
-
-summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))
-
-mdl <- lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars)
+mtcars[rownames(mtcars) %in% c("Chrysler Imperial", "Fiat 128", "Toyota Corolla"),]
 ```
+
+
