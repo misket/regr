@@ -12,15 +12,27 @@ It is safe to say switching from automatic to manual transmission would have wor
 ### Exploratory Analysis
 The variable names are printed a boplot of the mileage of two different transmission types. Finally the correlations of all the numeric variables to each other was investigated.
 Note that most of the variables had to be redefined as factors (namely: *cyl*, *vs*, *am*, *gear* and *carb*
-```{r, results = 'hold', echo = c(2, 4)}
-data(mtcars)
+
+```r
 names(mtcars)
-mtcars[,c(2,8:11)] <- lapply(mtcars[,c(2,8:11)], as.factor)
 cor(mtcars[sapply(mtcars, is.numeric)])
 ```
-```{r,  fig.height = 3.5, fig.width = 3.5, echo = FALSE}
-plot(mtcars$am, mtcars$mpg)
+
 ```
+##  [1] "mpg"  "cyl"  "disp" "hp"   "drat" "wt"   "qsec" "vs"   "am"   "gear"
+## [11] "carb"
+```
+
+```
+##          mpg    disp      hp    drat      wt    qsec
+## mpg   1.0000 -0.8476 -0.7762  0.6812 -0.8677  0.4187
+## disp -0.8476  1.0000  0.7909 -0.7102  0.8880 -0.4337
+## hp   -0.7762  0.7909  1.0000 -0.4488  0.6587 -0.7082
+## drat  0.6812 -0.7102 -0.4488  1.0000 -0.7124  0.0912
+## wt   -0.8677  0.8880  0.6587 -0.7124  1.0000 -0.1747
+## qsec  0.4187 -0.4337 -0.7082  0.0912 -0.1747  1.0000
+```
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
 
 The correlation table shows that most of the numeric variables are considerably related to each other. We have to take this into account whan we are trying to find the most parsimonous model.
 
@@ -28,18 +40,39 @@ Also The boxplot strongly suggest a divide between two different transmission ty
 ### The Model
 
 The strategy of determining the most relevent model was to maximise R^2 while minimizing the variables. The first comparison was made between a model that uses all the variables vs a model that only regressing using the transmission type.
-```{r, results = 'hold'}
+
+```r
 summary(lm(mpg ~ ., data = mtcars))$adj.r.squared
 summary(lm(mpg ~ am, data = mtcars))$adj.r.squared
+```
+
+```
+## [1] 0.779
+```
+
+```
+## [1] 0.3385
 ```
 Since all the variables give a higher R^2 it was decided to reduce the variables with the highest p values until R^2 stopped increasing.
 
 The highest R^2 comes up when; power, weight and 1/4 mile time (qsec) are applied as covariates to thransmission type. However reducing hp does not impact the R^2 to much and the weight - power correlation is considerable (explained above). Thus the finel model has only the weight and qsec as covariates.
-``` {r, echo = c(1,3:4), results = 'hold'}
+
+```r
 summary(lm(mpg ~ . - cyl - gear - carb - vs - disp - drat, data = mtcars))$adj.r.squared
-mdl <- lm(mpg ~ am + wt + qsec, data = mtcars)
 summary(lm(mpg ~ am + wt + qsec, data = mtcars))$adj.r.squared
 summary(lm(mpg ~ am + wt + qsec, data = mtcars))$coefs
+```
+
+```
+## [1] 0.8368
+```
+
+```
+## [1] 0.8336
+```
+
+```
+## NULL
 ```
 
 This model shows that transmission type, weight and 1/4 mile time explaines 83% of the change of mileage in this data. Furthermore transmission type seems to change the mileage. In particular, with all covariates kept constant changing from automatic to manual increases the mileage 2.93 mpg in average.
@@ -48,13 +81,14 @@ This model shows that transmission type, weight and 1/4 mile time explaines 83% 
 When we plot rhe residual diagnostics we observe some outliers. Other than that the normality and independence of residuals are fairly comforting.
 
 The major outliers are: **Chrysler Imperial**, **Fiat 128** and **Toyota Corolla**. Finally if we check the data for these cars we see:
-```{r, echo = FALSE}
-mtcars[rownames(mtcars) %in% c("Chrysler Imperial", "Fiat 128", "Toyota Corolla"),]
+
 ```
-```{r, echo = FALSE}
-par(mfcol = c(2,2))
-plot(mdl)
+##                    mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+## Chrysler Imperial 14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+## Fiat 128          32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+## Toyota Corolla    33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
 ```
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
 
 
 
